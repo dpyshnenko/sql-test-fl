@@ -5,10 +5,10 @@ q0_1_2;select * from courses order by nps desc limit 10
 q0_1_3;select distinct course_category from courses
 q0_1_4;select count(*) as cnt from courses where course_category = 'Machine Learning'
 q0_1_5;select distinct course_category from courses where num_weeks > 2 and num_tas > 4
-q0_1_6; select distinct course_name from courses where (nps > 85 and num_tas > 3) or not (course_category = 'Machine Learning' or num_tas < 5)
+q0_1_6; SELECT DISTINCT course_name FROM course_info LEFT JOIN course_run ON course_info.course_id = course_run.course_id WHERE (course_run.nps > 85 AND course_run.num_TAs > 3) OR NOT (course_info.course_category = 'Machine Learning' OR course_run.num_TAs < 5)
 q0_2_1;select min(nps) as min_nps, max(nps) as max_nps, avg(nps) as avg_nps from courses
 q0_2_2;select course_category, min(nps) as min_nps, max(nps) as max_nps, avg(nps) as avg_nps from courses group by course_category
-q0_2_3;select course_category, min(nps) as min_nps, max(nps) as max_nps, avg(nps) as avg_nps from courses where num_weeks <= 6 group by course_category
+q0_2_3;SELECT ci.course_category, MIN(cr.nps) AS min_nps, MAX(cr.nps) AS max_nps, AVG(cr.nps) AS avg_nps FROM course_run cr JOIN course_info ci ON cr.course_id = ci.course_id WHERE cr.num_weeks <= 6 GROUP BY ci.course_category
 q0_2_4;select course_category, min(nps) as min_nps, max(nps) as max_nps, avg(nps) as avg_nps from courses group by course_category having count(distinct course_name) > 3
 q0_2_5;select course_category, min(nps) as min_nps, max(nps) as max_nps, avg(nps) as avg_nps from courses group by course_category having count(distinct course_name) > 3 order by avg_nps desc limit 1
 q0_3_1;select course_category, avg(cast(num_learners_registered as float)/num_tas) as avg_learner_ta_ratio, avg(num_weeks) as avg_num_weeks from courses group by course_category
@@ -17,10 +17,10 @@ q1_1_2;select distinct course_name, course_category, course_desc from courses wh
 q1_1_3;select strftime("%Y",start_date) as year, count(*) as count_by_year from courses where course_category = 'Machine Learning' or course_category = 'Deep Learning' or course_category = 'Language Processing' group by strftime("%Y",start_date)
 q1_2_1;select strftime("%Y",start_date) as year, count(*) as count_by_year from courses group by strftime("%Y",start_date)
 q1_2_2;select avg(case when strftime("%Y", start_date) = '2020' then nps end) as covid_nps, avg(case when strftime("%Y", start_date) != '2020' then nps end) as rest_nps from courses
-q1_2_3;select strftime("%Y",start_date) as year, avg(nps) from courses group by strftime("%Y",start_date)
+q1_2_3;select strftime("%Y",start_date) as year, avg(nps) from course_run group by strftime("%Y",start_date)
 q1_2_4;select strftime("%Y",start_date) as year, avg(cast(num_learners_registered as float)/num_tas) as learner_ta_ratio, avg(num_weeks) as avg_num_weeks from courses group by strftime("%Y",start_date)
 q1_3_1;select case when num_learners_registered < 30 then 'low' when num_learners_registered < 100 then 'medium' when num_learners_registered >= 100 then 'high' end as num_learners_bucket, min(nps) as min_nps, max(nps) as max_nps, avg(nps) as avg_nps from courses where num_learners_registered is not null group by case when num_learners_registered < 30 then 'low' when num_learners_registered < 100 then 'medium' when num_learners_registered >= 100 then 'high' end
-q1_3_2;select case when num_weeks < 4 then 'short' else 'long' end as course_duration, course_level, avg(nps) as avg_nps from courses group by case when num_weeks < 4 then 'short' else 'long' end, course_level
+q1_3_2;SELECT CASE WHEN num_weeks < 4 THEN 'short' ELSE 'long' END AS course_duration, course_category, AVG(nps) AS avg_nps FROM course_run LEFT JOIN course_info ON course_run.course_id = course_info.course_id GROUP BY course_duration
 q2_1_1;select count(distinct course_registration_info.learner_id) as distinct_learner_count from course_info inner join course_run on course_info.course_id = course_run.course_id inner join course_registration_info on course_run.course_run_id = course_registration_info.course_run_id where course_info.course_category = 'Machine Learning'
 q2_1_2;select strftime("%Y",course_run.start_date) as year, count(distinct course_registration_info.learner_id) as distinct_learner_count from course_info inner join course_run on course_info.course_id = course_run.course_id inner join course_registration_info on course_run.course_run_id = course_registration_info.course_run_id where course_info.course_category = 'Machine Learning' group by strftime("%Y",course_run.start_date)
 q2_1_3;select course_run.course_run_id, course_info.course_name, course_info.course_category, course_run.start_date, course_run.nps, count(distinct course_registration_info.learner_id) as distinct_learner_count from course_info inner join course_run on course_info.course_id = course_run.course_id inner join course_registration_info on course_registration_info.course_run_id = course_run.course_run_id where course_info.course_desc like '%machine learning%' group by course_registration_info.course_run_id order by count(distinct learner_id) desc limit 1
